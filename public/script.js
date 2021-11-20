@@ -100,16 +100,20 @@ socket.on("user-disconnected", (uId) => {
 // CHAT
 
 const connectToNewUser = (userId, streams) => {
-  var call = peer.call(userId, streams);
-  console.log(call);
-  var video = document.createElement("video");
-  video.id = userId;
-  call.on("stream", (userVideoStream) => {
-    console.log(userVideoStream);
-    addVideoStream(video, userVideoStream);
-  });
-  peers[userId] = call;
-  audio.play();
+  var connect = confirm("Someone is requesting to join...Do you want to allow?")
+  if(connect){
+    var call = peer.call(userId, streams);
+    console.log(call);
+    var video = document.createElement("video");
+    video.id = userId;
+    call.on("stream", (userVideoStream) => {
+      console.log(userVideoStream);
+      addVideoStream(video, userVideoStream);
+    });
+    peers[userId] = call;
+    audio.play();
+  }
+  
 };
 
 const addVideoStream = (videoEl, stream) => {
@@ -194,7 +198,10 @@ function stopBothVideoAndAudio(stream) {
 }
 
 function leaveRoom() {
-  socket.emit('leave-room');
+ let leave = confirm("Are you sure you want to leave?")
+ if(leave){
+   socket.emit('leave-room');
+ }
 }
 
 function sendMsg(){
