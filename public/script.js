@@ -8,9 +8,7 @@ myVideo.muted = true;
 const peers = {} //To keep track of users currently in room
 const audio = new Audio("ding.mp3")
 var peer = new Peer(undefined, {
-  path: "/peerjs",
-  host: "/",
-  port: "3030",
+ 
 });
 
 peer.on("open", (id) => {
