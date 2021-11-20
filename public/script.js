@@ -5,15 +5,19 @@ const main__chat__window = document.getElementById("main__chat__window");
 const videoGrid = document.getElementById("video-grid");
 const myVideo = document.createElement("video");
 myVideo.muted = true;
-
+const peers = {} //To keep track of users currently in room
+const audio = new Audio("ding.mp3")
 var peer = new Peer(undefined, {
   path: "/peerjs",
   host: "/",
   port: "3030",
 });
 
+peer.on("open", (id) => {
+  socket.emit("join-room", ROOM_ID, id);
+});
 let myVideoStream;
-
+let anotherStream;
 var getUserMedia =
   navigator.getUserMedia ||
   navigator.webkitGetUserMedia ||
@@ -27,6 +31,8 @@ navigator.mediaDevices
   .then((stream) => {
     myVideoStream = stream;
     addVideoStream(myVideo, stream);
+    let userStream;
+    let userVideo;
 
     peer.on("call", (call) => {
       call.answer(stream);
@@ -34,12 +40,15 @@ navigator.mediaDevices
 
       call.on("stream", (userVideoStream) => {
         addVideoStream(video, userVideoStream);
+        userStream = userVideoStream;
+        userVideo = video;
       });
     });
 
     socket.on("user-connected", (userId) => {
       connectToNewUser(userId, stream);
     });
+
 
     document.addEventListener("keydown", (e) => {
       if (e.which === 13 && chatInputBox.value != "") {
@@ -57,14 +66,21 @@ navigator.mediaDevices
     });
   });
 
+
+
+
+
 peer.on("call", function (call) {
-  getUserMedia(
-    { video: true, audio: true },
+  getUserMedia({
+      video: true,
+      audio: true
+    },
     function (stream) {
       call.answer(stream); // Answer the call with an A/V stream.
       const video = document.createElement("video");
       call.on("stream", function (remoteStream) {
         addVideoStream(video, remoteStream);
+        anotherStream  = remoteStream;
       });
     },
     function (err) {
@@ -73,8 +89,14 @@ peer.on("call", function (call) {
   );
 });
 
-peer.on("open", (id) => {
-  socket.emit("join-room", ROOM_ID, id);
+socket.on("user-disconnected", (uId) => {
+  if (peers[uId]) {
+    document.getElementById(uId).remove()
+    peers[uId].remoteStream.getVideoTracks()[0].enabled = false;
+    peers[uId].remoteStream.Audio = false;
+    // peers[uId].close()
+  } 
+
 });
 
 // CHAT
@@ -83,10 +105,13 @@ const connectToNewUser = (userId, streams) => {
   var call = peer.call(userId, streams);
   console.log(call);
   var video = document.createElement("video");
+  video.id = userId;
   call.on("stream", (userVideoStream) => {
     console.log(userVideoStream);
     addVideoStream(video, userVideoStream);
   });
+  peers[userId] = call;
+  audio.play();
 };
 
 const addVideoStream = (videoEl, stream) => {
@@ -149,3 +174,24 @@ const setMuteButton = () => {
   <span>Mute</span>`;
   document.getElementById("muteButton").innerHTML = html;
 };
+
+function stopBothVideoAndAudio(stream) {
+  stream.getTracks().forEach(function (track) {
+    if (track.readyState == 'live') {
+      track.stop();
+    }
+  });
+}
+
+function leaveRoom() {
+  socket.emit('leave-room');
+}
+
+function sendMsg(){
+  if (chatInputBox.value != "") {
+    socket.emit("message", chatInputBox.value);
+    chatInputBox.value = "";
+  }
+}
+
+document.getElementById("leave-meeting").addEventListener("click", leaveRoom);

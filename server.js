@@ -1,14 +1,16 @@
 const express = require("express");
 const app = express();
 const server = require("http").Server(app);
-const { v4: uuidv4 } = require("uuid");
+const {
+  v4: uuidv4
+} = require("uuid");
 const io = require("socket.io")(server);
 // Peer
 
-const { ExpressPeerServer } = require("peer");
-const peerServer = ExpressPeerServer(server, {
-  debug: true,
-});
+const {
+  ExpressPeerServer
+} = require("peer");
+const peerServer = ExpressPeerServer(server,{});
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -19,7 +21,9 @@ app.get("/", (req, rsp) => {
 });
 
 app.get("/:room", (req, res) => {
-  res.render("room", { roomId: req.params.room });
+  res.render("room", {
+    roomId: req.params.room
+  });
 });
 
 io.on("connection", (socket) => {
@@ -30,6 +34,16 @@ io.on("connection", (socket) => {
     socket.on("message", (message) => {
       io.to(roomId).emit("createMessage", message);
     });
+
+    socket.on('leave-room', () => {
+
+      socket.to(roomId).broadcast.emit('user-disconnected', userId);
+      socket.leave(roomId);
+    })
+    socket.on('disconnect', () => {
+      socket.to(roomId).broadcast.emit('user-disconnected', userId);
+      socket.leave(roomId);
+    })
   });
 });
 
