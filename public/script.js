@@ -128,6 +128,18 @@ const addVideoStream = (videoEl, stream) => {
   }
 };
 
+
+const hideUnhide = () =>{
+  chat_panel = document.getElementById('chat_panel')
+  let hidden = chat_panel.style.display
+  if(hidden === "none"){
+    chat_panel.style.display = "flex";
+  }
+  else{
+    chat_panel.style.display = "none";
+  }
+}
+
 const playStop = () => {
   let enabled = myVideoStream.getVideoTracks()[0].enabled;
   if (enabled) {
