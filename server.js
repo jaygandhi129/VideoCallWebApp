@@ -10,7 +10,9 @@ const io = require("socket.io")(server);
 const {
   ExpressPeerServer
 } = require("peer");
-const peerServer = ExpressPeerServer(undefined,server);
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+});
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -37,12 +39,10 @@ io.on("connection", (socket) => {
 
     socket.on('leave-room', () => {
 
-      socket.to(roomId).broadcast.emit('user-disconnected', userId);
-      socket.leave(roomId);
+      socket.broadcast.to(roomId).emit('user-disconnected', userId);
     })
     socket.on('disconnect', () => {
-      socket.to(roomId).broadcast.emit('user-disconnected', userId);
-      socket.leave(roomId);
+      socket.broadcast.to(roomId).emit('user-disconnected', userId);
     })
   });
 });
