@@ -7,6 +7,7 @@ const myVideo = document.createElement("video");
 myVideo.muted = true;
 const peers = {} //To keep track of users currently in room
 const audio = new Audio("ding.mp3")
+const audio2 = new Audio("message.mp3")
 var peer = new Peer(undefined, {
  
 });
@@ -61,6 +62,7 @@ navigator.mediaDevices
       li.innerHTML = msg;
       all_messages.append(li);
       main__chat__window.scrollTop = main__chat__window.scrollHeight;
+      audio2.play();
     });
   });
 
@@ -92,7 +94,7 @@ socket.on("user-disconnected", (uId) => {
     document.getElementById(uId).remove()
     peers[uId].remoteStream.getVideoTracks()[0].enabled = false;
     peers[uId].remoteStream.Audio = false;
-    // peers[uId].close()
+    peers[uId].close()
   } 
 
 });

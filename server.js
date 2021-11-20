@@ -28,6 +28,10 @@ app.get("/:room", (req, res) => {
   });
 });
 
+app.get("/MeetEnd", (req,res)=>{
+  res.render("meetend");
+})
+
 io.on("connection", (socket) => {
   socket.on("join-room", (roomId, userId) => {
     socket.join(roomId);
