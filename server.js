@@ -10,7 +10,7 @@ const io = require("socket.io")(server);
 const {
   ExpressPeerServer
 } = require("peer");
-const peerServer = ExpressPeerServer(server,{});
+const peerServer = ExpressPeerServer(undefined,server);
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
